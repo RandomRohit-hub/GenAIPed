@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GenAIPedia - Engineering AI Assistant</title>
+
+    <!-- Bootstrap + Icons + jQuery -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css')}}">
+</head>
+
+<body>
+    <div class="container-fluid h-100">
+        <div class="row justify-content-center h-100">
+            <div class="col-md-8 col-xl-6 chat">
+                <div class="card">
+
+                    <!-- Header -->
+                    <div class="card-header msg_head">
+                        <div class="d-flex bd-highlight">
+                            <div class="img_cont">
+                                <img src="https://cdn-icons-png.flaticon.com/512/4712/4712100.png" class="rounded-circle user_img">
+                                <span class="online_icon"></span>
+                            </div>
+                            <div class="user_info">
+                                <span>GenAIPedia - Engineering AI Assistant</span>
+                                <p>Ask anything related to AI, ML, Data Science & Engineering</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chat Body -->
+                    <div id="chat_body" class="card-body msg_card_body"></div>
+
+                    <!-- Chat Input -->
+                    <div class="card-footer">
+                        <form id="messageForm" class="input-group">
+                            <input type="text" id="messageInput" autocomplete="off" 
+                                   placeholder="Ask your question about AI / ML / Engineering..." 
+                                   class="form-control type_msg" required>
+
+                            <div class="input-group-append">
+                                <button type="submit" class="input-group-text send_btn">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+$(document).ready(function() {
+
+    $("#messageForm").on("submit", function(event) {
+        event.preventDefault();
+
+        let userText = $("#messageInput").val().trim();
+        if (!userText) return;
+
+        let time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+        // Display user message
+        $("#chat_body").append(`
+            <div class="d-flex justify-content-end mb-4">
+                <div class="msg_cotainer_send">${userText}
+                    <span class="msg_time_send">${time}</span>
+                </div>
+                <div class="img_cont_msg">
+                    <img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg">
+                </div>
+            </div>
+        `);
+
+        $("#messageInput").val("");
+
+        // Send request to Flask backend
+        $.ajax({
+            url: "/ask",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({ question: userText }),
+
+            success: function(response) {
+                let botReply = response.answer || "I don't know.";
+
+                $("#chat_body").append(`
+                    <div class="d-flex justify-content-start mb-4">
+                        <div class="img_cont_msg">
+                            <img src="https://cdn-icons-png.flaticon.com/512/387/387569.png" class="rounded-circle user_img_msg">
+                        </div>
+                        <div class="msg_cotainer">${botReply}
+                            <span class="msg_time">${time}</span>
+                        </div>
+                    </div>
+                `);
+
+                $("#chat_body").scrollTop($("#chat_body")[0].scrollHeight);
+            }
+        });
+    });
+
+});
+</script>
+
+</body>
+</html>
